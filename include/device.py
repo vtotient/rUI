@@ -9,6 +9,8 @@ class Device():
 	timeout = 5000	
 	ser = None
 
+	MAXSIZE = 100
+
 	def __init__(self):
 		self.ser = serial.Serial()
 		self.ser.baudrate = self.baudrate
@@ -29,3 +31,14 @@ class Device():
 
 	def listDevices(self):
 		return list_ports.comports()
+
+	def readBytes(self, n):
+		return self.ser.read(n)
+
+	def writeBytes(self, data):
+		if len(data) > self.MAXSIZE:
+			return False
+		self.ser.write(data)
+
+	def writeInt8(self, data):
+		return self.writeBytes(data.to_bytes(1, 'little'))

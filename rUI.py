@@ -57,8 +57,29 @@ class rUI(Cmd):
 				if True:
 					print(str(self.device.readLine(), 'utf-8'))
 		except KeyboardInterrupt:
-			print("\Read terminated")
-		
+			print("Read terminated")
+
+	def do_getSpiState(self, inp):
+		"Get SPI State"
+
+		STMReceiveCode = 3 # Integer code that the STM looks for
+		self.device.writeInt8(STMReceiveCode)
+		state = self.device.readBytes(1)
+
+		states = ["HAL_SPI_STATE_RESET: Peripheral not Initialized",
+					"HAL_SPI_STATE_READY: Peripheral Initialized and ready for use",
+					"HAL_SPI_STATE_BUSY: an internal process is ongoing",
+					"HAL_SPI_STATE_BUSY_TX: Data Transmission process is ongoing",
+					"HAL_SPI_STATE_BUSY_RX: Data Reception process is ongoing",
+					"HAL_SPI_STATE_BUSY_TX_RX: Data Transmission and Reception process is ongoing",
+					"HAL_SPI_STATE_ERROR: SPI error state",
+					"HAL_SPI_STATE_ABORT: Abort state"]
+
+		print("State: "+str(state[0]))
+		print(states[state[0]])
+
+
+
 # Driver 
 p = rUI()
 p.cmdloop()
