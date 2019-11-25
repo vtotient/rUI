@@ -2,6 +2,17 @@ from cmd import Cmd
 import include.strings as strings
 from include.device import Device
 
+# Require Device function decorator. Use this on any method that requires a device to be set
+def require_device(func):
+	def wrapper(self=None, *arg, **kwargs):
+		if self.device.ser.is_open:
+			func(self, *arg, **kwargs)
+		else:
+			print("No device! Please connect to a device with \"connectDevice\"")
+	return wrapper
+
+
+
 class rUI(Cmd):
 	prompt = "rUI> "
 	intro = strings.banner	
@@ -48,6 +59,7 @@ class rUI(Cmd):
 			else:
 				print("Selection out of range...try again")
 
+	@require_device
 	def do_listen(self, inp):
 		"Read from device"
 		# Ensure serial port is open 
@@ -59,6 +71,7 @@ class rUI(Cmd):
 		except KeyboardInterrupt:
 			print("Read terminated")
 
+	@require_device
 	def do_getSpiState(self, inp):
 		"Get SPI State"
 
