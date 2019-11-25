@@ -23,6 +23,13 @@ class Device():
 		self.ser.open()
 		return self.ser.is_open
 
+	def closePort(self):
+		self.ser.close()
+		return self.ser.is_open
+
+	def getPort(self):
+		return self.ser.port
+
 	def isOpen(self):
 		return self.ser.is_open
 
