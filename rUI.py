@@ -2,9 +2,11 @@ from cmd import Cmd
 import include.strings as strings
 from include.device import Device
 import os.path, json
+from functools import wraps
 
 # Require Device function decorator. Use this on any method that requires a device to be set
 def require_device(func):
+	@wraps(func)
 	def wrapper(self=None, *arg, **kwargs):
 		if self.device.ser.is_open:
 			func(self, *arg, **kwargs)
@@ -103,7 +105,7 @@ class rUI(Cmd):
 		"Disconnect current device"
 		self.device.closePort()
 		print("Disconnected from "+ self.device.getPort())
-		self.device.setPort = None
+		self.device.setPort(None)
 
 		setLocalOption({'lastPort':None})
 
