@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "formatters": {
+        "simple": {
+            "format": "%(levelname)s - %(asctime)s - %(message)s"
+        }
+    },
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+            "filename": "debug.log"
+        }
+    },
+    "loggers": {
+        "rUI": {
+            "level": "DEBUG",
+            "handlers": [
+                "file"
+            ],
+            "propagate": false
+        }
+    },
+    "root": {
+        "level": "DEBUG",
+        "handlers": [
+            "file"
+        ]
+    }
+}

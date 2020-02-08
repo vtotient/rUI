@@ -1,6 +1,7 @@
 from cmd import Cmd
 import include.strings as strings
 from include.device import Device
+from include.logger import logger
 import os.path, json
 from functools import wraps
 
@@ -63,6 +64,7 @@ class rUI(Cmd):
 
 	def do_connectDevice(self, inp):
 		"Connect to a serial device"
+		logger.info("Listing devices")
 		# Get a list of the available serial ports
 		self.device.closePort()
 		ports = self.device.listDevices() 
@@ -71,6 +73,7 @@ class rUI(Cmd):
 		# Get device names and print to screen
 		i = 0
 		for port in ports:
+			logger.info("Device found: %s", port)
 			portNames.append(port.device)
 			# Format
 			print(str(i) + "     " + str(port))
@@ -96,6 +99,7 @@ class rUI(Cmd):
 
 				setLocalOption({'lastPort':portNames[selection]})
 
+				logger.info("Selecting device: %s", portNames[selection])
 				break
 			else:
 				print("Selection out of range...try again")
@@ -143,6 +147,7 @@ class rUI(Cmd):
 
 
 
+logger.info("---Starting rUI---")
 # Driver 
 p = rUI()
 p.cmdloop()
