@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+options.json
+.gitignore
+/include/__pycache__/

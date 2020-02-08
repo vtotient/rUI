@@ -1,6 +1,7 @@
 from cmd import Cmd
 import include.strings as strings
 from include.device import Device
+import include.testCommand as testCommand
 from include.logger import logger
 import os.path, json
 from functools import wraps
@@ -36,12 +37,12 @@ def getLocalOption(key):
 
 	return None
 
-
 class rUI(Cmd):
 	prompt = "rUI> "
-	intro = strings.banner	
+	intro = strings.banner  
 
 	device = Device()
+	testQueue = []
 
 	def preloop(self):
 		if os.path.isfile("options.json"):
@@ -63,8 +64,10 @@ class rUI(Cmd):
 		return True
 
 	def do_connectDevice(self, inp):
-		"Connect to a serial device"
+		"""Connect to a serial device.
+		Shows list of open devices and prompts selection."""
 		logger.info("Listing devices")
+
 		# Get a list of the available serial ports
 		self.device.closePort()
 		ports = self.device.listDevices() 
@@ -86,7 +89,7 @@ class rUI(Cmd):
 			if selection is "q":
 				return False
 			
-			# Verify valid selction	
+			# Verify valid selction 
 			try:
 				selection = int(selection)
 			except:
@@ -106,12 +109,13 @@ class rUI(Cmd):
 
 	@require_device
 	def do_disconnectDevice(self, inp):
-		"Disconnect current device"
+		"""Disconnects the current device"""
 		self.device.closePort()
 		print("Disconnected from "+ self.device.getPort())
 		self.device.setPort(None)
 
 		setLocalOption({'lastPort':None})
+
 
 	@require_device
 	def do_listen(self, inp):
@@ -125,6 +129,30 @@ class rUI(Cmd):
 		except KeyboardInterrupt:
 			print("Read terminated")
 
+
+	def do_test(self, inp):
+		"Handles test"
+
+		try:
+			inp = inp.split()
+			getattr(testCommand, 'do_'+inp[0])(self," ".join(inp[1:]))
+		except AttributeError:
+			print("Please enter a valid command")
+	
+	def help_test(self):
+		print("Handles test queue and excecution.")
+		testFncNames = [fnc for fnc in dir(testCommand) if len(fnc) > 3 and fnc[:3] == "do_"]
+		for fnc in testFncNames:
+			print(fnc[3:]+": "+testCommand.__dict__[fnc].__doc__)
+
+	def complete_test(self, text, line, begidx, endidx):
+		testCommands = [command[3:] for command in dir(testCommand) if len(command) > 3 and command[:3] == "do_"]
+		if text:
+			return [ command for command in testCommands if command.startswith(text) ]
+		else:
+			return testCommands
+
+		
 	@require_device
 	def do_getSpiState(self, inp):
 		"Get SPI State"
