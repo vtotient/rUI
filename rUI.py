@@ -146,6 +146,23 @@ class rUI(Cmd):
 		print(states[state[0]])
 
 
+	@require_device
+	def do_getState(self, inp) :
+	    
+	    ArduinoReceiveCode = 1 # Integer code that the arduino looks for
+	    
+	    #dictionary
+	    states = {0: "State0", 
+	    			1: "State1", 
+	    			2: "State2",
+	    			3: "State3"} 
+
+	    self.device.writeInt8(ArduinoReceiveCode)
+	    byteReturned = self.device.readBytes(1)
+
+	    print("State: " + states.get(byteReturned))
+
+
 
 logger.info("---Starting rUI---")
 # Driver 
