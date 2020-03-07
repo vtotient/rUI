@@ -5,10 +5,36 @@ from include.logger import logger
 import os.path, json
 from functools import wraps
 
-# Require Device function decorator. Use this on any method that requires a device to be set
+"""Radio User Interface for testing.
+
+Overall description of the program. Include brief description of exported classes and functions and/or usage
+examples?
+
+"""
+
 def require_device(func):
+	"""Function decorator. 
+
+	Use for any method that requires a device to be set.
+
+	"""
+
 	@wraps(func)
 	def wrapper(self=None, *arg, **kwargs):
+		"""Wraps device.
+
+    	Args:
+        	*arg: An open Bigtable Table instance.
+        	**kwargs: A sequence of strings representing the key of each table row
+            to fetch.
+
+    	Returns:
+        	wrapper
+
+        	If device.ser can find no open device,
+        	then prints error message. 
+        """
+
 		if self.device.ser.is_open:
 			func(self, *arg, **kwargs)
 		else:
@@ -17,6 +43,13 @@ def require_device(func):
 
 
 def setLocalOption(data):
+	"""local option setter
+
+	Args:
+		data
+
+	"""
+
 	options = {}
 	if os.path.isfile("options.json"):
 		with open("options.json","r") as f:
@@ -50,8 +83,8 @@ class rUI(Cmd):
 
 				# Do initialization on options stored in options.json
 
-				# Set last port
-				lastPort = getLocalOption('lastPort')
+				
+				lastPort = getLocalOption('lastPort') # Set last port
 				if lastPort in [i.device for i in self.device.listDevices()]:
 					self.device.setPort(lastPort)
 					self.device.openPort()
@@ -63,9 +96,14 @@ class rUI(Cmd):
 		return True
 
 	def do_connectDevice(self, inp):
-		"Connect to a serial device"
-		logger.info("Listing devices")
-		# Get a list of the available serial ports
+		"""Connect to a serial device
+
+		Args:
+			inp
+
+		"""
+
+		logger.info("Listing devices") # Get a list of the available serial ports
 		self.device.closePort()
 		ports = self.device.listDevices() 
 		portNames = []
@@ -115,8 +153,18 @@ class rUI(Cmd):
 
 	@require_device
 	def do_listen(self, inp):
-		"Read from device"
-		# Ensure serial port is open 
+		"""Read from device. First ensure serial port is open.
+
+		Args:
+			inp
+
+		Returns:
+
+		Raises:
+			KeyboardInterrupt
+
+		"""
+	
 		print("Enter CTRL-c to terminate read")
 		try:
 			while True:
@@ -127,7 +175,14 @@ class rUI(Cmd):
 
 	@require_device
 	def do_getSpiState(self, inp):
-		"Get SPI State"
+		"""Get SPI State
+
+		Args:
+			inp
+
+		Returns:
+			Prints state associated with inp
+		"""
 
 		STMReceiveCode = 3 # Integer code that the STM looks for
 		self.device.writeInt8(STMReceiveCode)
