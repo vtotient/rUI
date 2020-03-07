@@ -20,8 +20,12 @@ class Device():
         self.ser.port = portName
 
     def openPort(self):
-        self.ser.open()
-        return self.ser.is_open
+        try:
+            self.ser.open()
+            return self.ser.is_open
+        except serial.serialutil.SerialException:
+            print("Port busy.")
+            return False
 
     def closePort(self):
         self.ser.close()

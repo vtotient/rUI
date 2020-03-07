@@ -1,0 +1,9 @@
+---
+DummyTest1:
+  arg1: abc
+  duration: 0
+---
+DummyTest1:
+  arg1: quack
+  duration: 1
+  # lol: notImplemented:(

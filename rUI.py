@@ -10,6 +10,7 @@ from functools import wraps
 def require_device(func):
     @wraps(func)
     def wrapper(self=None, *arg, **kwargs):
+        # Only run the decorated function if serial is open
         if self.device.ser.is_open:
             func(self, *arg, **kwargs)
         else:
@@ -29,6 +30,7 @@ def setLocalOption(data):
     with open("options.json", "w") as f:
         json.dump(options, f)
 
+# Get a given option from local storage in options.json
 def getLocalOption(key):
     if os.path.isfile("options.json"):
         with open("options.json","r") as f:
@@ -37,31 +39,36 @@ def getLocalOption(key):
 
     return None
 
+
+# Methods starting with do_ are functions accessable from the rUI. See Cmd module docs
 class rUI(Cmd):
     prompt = "rUI> "
     intro = strings.banner  
 
-    device = Device()
-    testQueue = []
+    device = Device() # Serial device to interact with
+    testQueue = [] # Holds tests to be excecuted
 
+
+    # Runs at startup of the cmd
     def preloop(self):
+        # If there are stored options, load them
         if os.path.isfile("options.json"):
             with open("options.json", "r") as f:
                 options = json.load(f)
-
-                # Do initialization on options stored in options.json
 
                 # Set last port
                 lastPort = getLocalOption('lastPort')
                 if lastPort in [i.device for i in self.device.listDevices()]:
                     self.device.setPort(lastPort)
-                    self.device.openPort()
-                    self.intro += "Connected to last port " + lastPort + "\n"
+                    if self.device.openPort():
+                        self.intro += "Connected to last port " + lastPort + "\n"
+
 
     def do_exit(self, inp):
         "Exit the rUI"
         print(strings.outro)
         return True
+
 
     def do_connectDevice(self, inp):
         """Connect to a serial device.
@@ -135,17 +142,24 @@ class rUI(Cmd):
 
         try:
             inp = inp.split()
+            # The test command has sub commands (i.e. "test add xyz.yaml", "test list")
+            # These sub commands are stored in the testCommand module, so we use getattr
+            # to retrieve those functions and then call them passing in self and the 
+            # remainder of the input command.
             getattr(testCommand, 'do_'+inp[0])(self," ".join(inp[1:]))
         except AttributeError:
             print("Please enter a valid command")
     
     def help_test(self):
         print("Handles test queue and excecution.")
+        # Get a list of the sub command names in testCommand
         testFncNames = [fnc for fnc in dir(testCommand) if len(fnc) > 3 and fnc[:3] == "do_"]
         for fnc in testFncNames:
+            # Print each function's documentation
             print(fnc[3:]+": "+testCommand.__dict__[fnc].__doc__)
 
     def complete_test(self, text, line, begidx, endidx):
+        # Autocompletion for test sub commands.
         testCommands = [command[3:] for command in dir(testCommand) if len(command) > 3 and command[:3] == "do_"]
         if text:
             return [ command for command in testCommands if command.startswith(text) ]
@@ -175,8 +189,9 @@ class rUI(Cmd):
 
 
 
-logger.info("---Starting rUI---")
-# Driver 
-p = rUI()
-p.cmdloop()
+if __name__ == '__main__':
+    logger.info("---Starting rUI---")
+    # Driver 
+    p = rUI()
+    p.cmdloop()
 
