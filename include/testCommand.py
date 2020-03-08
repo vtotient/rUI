@@ -25,6 +25,8 @@ def addToQueueFromFile(self, fileName):
             for test in y:
                 testName = list(test.keys())[0] # Get the name of the test
 
+                if not test[testName]:
+                    test[testName] = {}
                 # Retrieve the test object from test files and instantiate with args from yaml
                 testObject = getTest(testName)(self.device, **test[testName]) 
                 

@@ -8,10 +8,13 @@ class DummyTest1(BaseTest):
         super().__init__(device, **kwargs) 
         self.setDuration(duration)
     
-    def run(self):
-        super().run()
+    def test(self):
+        self.device.readBytes(1)
         self.device.writeInt8(self.duration)
-        print(self.device.readBytes(1))
+        print("Hoping its a "+hex(65+32))
+        r = self.device.readBytes(1)
+        print(r)
+        print("Pass" if r == b'\x61' else "Fail!")
     
     def setName(self, testName):
         self.name = testName

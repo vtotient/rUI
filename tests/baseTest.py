@@ -2,7 +2,6 @@ TESTS_DIR = "tests/"
 class BaseTest(object):
     #Define basetest parameters
     name = None
-    duration = 1000
     opcode = 0xFF
 
     # When an __init__ is called on the BaseTest class, a child should be
@@ -24,24 +23,31 @@ class BaseTest(object):
                 if cols[3] == self.name:
                     self.opcode = int(cols[2])
                     break
-
     
     def run(self):
         # Ensure device is plugged in
         print("Kicking off the test")
-        self.device.write8Int(self.opcode) # Send the opcode
+        self.device.writeInt8(self.opcode) # Send the opcode
+        try:
+            self.test()
+        except KeyboardInterrupt as e:
+            print("\nStopping...")
+
+    def test(self):
+        raise NotImplementedError()
 
     def terminate(self):
         raise NotImplementedError()
-    
-    def setName(self, testName):
-        self.name = testName
-    
-    def getName(self):
-        return self.name
-    
-    def setDuration(self, length):
-        self.duration = length
-    
-    def getDuration(self):
-        return self.duration
+
+    def testPass(self):
+        pass
+
+    def testFail(self):
+        pass
+
+    def __repr__(self):
+        return self.name + " " + hex(self.opcode)
+
+    def __str__(self):
+        return self.__repr__()
+
