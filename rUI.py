@@ -6,11 +6,26 @@ from include.logger import logger
 import os.path, json
 from functools import wraps
 
-# Require Device function decorator. Use this on any method that requires a device to be set
 def require_device(func):
+    """Function decorator. 
+
+    Use for any method that requires a device to be set.
+
+    """
     @wraps(func)
     def wrapper(self=None, *arg, **kwargs):
-        # Only run the decorated function if serial is open
+        """Wraps device. Only run the decorated function if serial is open
+
+        Args:
+            *arg: 
+            **kwargs: 
+
+        Returns:
+            wrapper
+            If device.ser can find no open device, then prints error message. 
+
+        """
+
         if self.device.ser.is_open:
             func(self, *arg, **kwargs)
         else:
@@ -30,8 +45,10 @@ def setLocalOption(data):
     with open("options.json", "w") as f:
         json.dump(options, f)
 
-# Get a given option from local storage in options.json
+
 def getLocalOption(key):
+    """Get a given option from local storage in options.json
+    """
     if os.path.isfile("options.json"):
         with open("options.json","r") as f:
             options = json.load(f)
@@ -40,8 +57,13 @@ def getLocalOption(key):
     return None
 
 
-# Methods starting with do_ are functions accessable from the rUI. See Cmd module docs
 class rUI(Cmd):
+    """Radio User Interface
+
+    Methods starting with do_ are functions accessable from the rUI. 
+    See Cmd module docs
+
+    """
     prompt = "rUI> "
     intro = strings.banner  
 
@@ -72,11 +94,12 @@ class rUI(Cmd):
 
     def do_connectDevice(self, inp):
         """Connect to a serial device.
-        Shows list of open devices and prompts selection."""
+        
+            Shows list of open devices and prompts selection.
+        """
         logger.info("Listing devices")
 
-        # Get a list of the available serial ports
-        self.device.closePort()
+        self.device.closePort() # Get a list of the available serial ports
         ports = self.device.listDevices() 
         portNames = []
     
@@ -126,8 +149,17 @@ class rUI(Cmd):
 
     @require_device
     def do_listen(self, inp):
-        "Read from device"
-        # Ensure serial port is open 
+        """Read from device. 
+
+        First ensure serial port is open.
+       
+        Args:
+            inp
+       
+        Raises:
+            KeyboardInterrupt
+        """
+
         print("Enter CTRL-c to terminate read")
         try:
             while True:
@@ -138,14 +170,19 @@ class rUI(Cmd):
 
 
     def do_test(self, inp):
-        "Handles test"
+        """Handles test
+
+        The test command has sub commands (i.e. "test add xyz.yaml", "test list")
+        These sub commands are stored in the testCommand module, so we use getattr
+        to retrieve those functions and then call them passing in self and the remainder of the input command.
+
+        Raises:
+            AttributeError
+
+        """
 
         try:
             inp = inp.split()
-            # The test command has sub commands (i.e. "test add xyz.yaml", "test list")
-            # These sub commands are stored in the testCommand module, so we use getattr
-            # to retrieve those functions and then call them passing in self and the 
-            # remainder of the input command.
             getattr(testCommand, 'do_'+inp[0])(self," ".join(inp[1:]))
         except AttributeError:
             print("Please enter a valid command")
